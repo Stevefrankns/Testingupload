@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlanta Climate Pros | HVAC Services</title>
+  
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Load React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Load Babel to process the JSX code in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- ICON COMPONENTS ---
+    const SvgIcon = ({ children, className = "w-6 h-6" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const Phone = ({className}) => <SvgIcon className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></SvgIcon>;
+    const MapPin = ({className}) => <SvgIcon className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></SvgIcon>;
+    const Menu = ({className}) => <SvgIcon className={className}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></SvgIcon>;
+    const X = ({className}) => <SvgIcon className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></SvgIcon>;
+    const ChevronRight = ({className}) => <SvgIcon className={className}><path d="m9 18 6-6-6-6"/></SvgIcon>;
+    const Thermometer = ({className}) => <SvgIcon className={className}><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></SvgIcon>;
+    const Wind = ({className}) => <SvgIcon className={className}><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></SvgIcon>;
+    const Zap = ({className}) => <SvgIcon className={className}><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></SvgIcon>;
+    const Droplets = ({className}) => <SvgIcon className={className}><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7 2.9 7 2.9s-2.15 5.25-2.29 6.16C3.57 10 3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 1 14 8.5c.85 1.45 1.5 2.5 1.5 3.5 0 1.55-1.25 2.8-2.8 2.8-.54 0-1.04-.15-1.48-.42"/></SvgIcon>;
+    const ShieldCheck = ({className}) => <SvgIcon className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></SvgIcon>;
+    const Clock = ({className}) => <SvgIcon className={className}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></SvgIcon>;
+    const Wrench = ({className}) => <SvgIcon className={className}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></SvgIcon>;
+    const Settings = ({className}) => <SvgIcon className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></SvgIcon>;
+    const AlertTriangle = ({className}) => <SvgIcon className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></SvgIcon>;
+    const HomeIcon = ({className}) => <SvgIcon className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></SvgIcon>;
+    const CheckCircle2 = ({className}) => <SvgIcon className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></SvgIcon>;
+    const Search = ({className}) => <SvgIcon className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></SvgIcon>;
+
+    // --- DATA: EXACT SITEMAP STRUCTURE (From URLs list) ---
+    const rawSitemap = {
+      "Air Conditioning Services": [
+        "/air-conditioning-services/air-conditioning-repair/", "/air-conditioning-services/air-conditioning-installation/", "/air-conditioning-services/air-conditioning-replacement/", "/air-conditioning-services/air-conditioning-maintenance/", "/air-conditioning-services/air-conditioning-system-diagnostics/", "/air-conditioning-services/air-conditioning-cooling-restoration/", "/air-conditioning-services/air-conditioning-airflow-correction/", "/air-conditioning-services/air-conditioning-efficiency-improvement/", "/air-conditioning-services/air-conditioning-performance-optimization/", "/air-conditioning-services/cooling-output-restoration/", "/air-conditioning-services/cooling-capacity-optimization/", "/air-conditioning-services/cooling-distribution-adjustment/", "/air-conditioning-services/cooling-system-stabilization/", "/air-conditioning-services/cooling-performance-recovery/", "/air-conditioning-services/ac-short-cycling-correction/", "/air-conditioning-services/ac-warm-air-diagnostics/", "/air-conditioning-services/ac-no-cooling-diagnostics/", "/air-conditioning-services/ac-weak-airflow-correction/", "/air-conditioning-services/ac-temperature-control-correction/", "/air-conditioning-services/ac-noise-diagnostics/", "/air-conditioning-services/ac-freeze-up-repair/", "/air-conditioning-services/ac-copper-line-icing-repair/", "/air-conditioning-services/ac-humidity-performance-correction/", "/air-conditioning-services/high-heat-cooling-adjustment/", "/air-conditioning-services/zone-cooling-adjustment/"
+      ],
+      "Heating and Furnace Services": [
+        "/heating-furnace-services/furnace-repair/", "/heating-furnace-services/furnace-installation/", "/heating-furnace-services/furnace-replacement/", "/heating-furnace-services/furnace-maintenance/", "/heating-furnace-services/heating-system-maintenance/", "/heating-furnace-services/heating-system-diagnostics/", "/heating-furnace-services/heating-output-restoration/", "/heating-furnace-services/heating-output-stabilization/", "/heating-furnace-services/heating-capacity-restoration/", "/heating-furnace-services/heating-distribution-correction/", "/heating-furnace-services/heating-distribution-optimization/", "/heating-furnace-services/heating-efficiency-improvement/", "/heating-furnace-services/heating-performance-optimization/", "/heating-furnace-services/heating-balance-adjustment/", "/heating-furnace-services/heating-system-recovery/", "/heating-furnace-services/furnace-cold-air-diagnostics/", "/heating-furnace-services/furnace-short-cycling-correction/", "/heating-furnace-services/furnace-overheating-repair/", "/heating-furnace-services/furnace-noise-diagnostics/", "/heating-furnace-services/furnace-breaker-trip-diagnostics/", "/heating-furnace-services/uneven-heating-correction/", "/heating-furnace-services/cold-weather-heating-adjustment/"
+      ],
+      "Heat Pump Services": [
+        "/heat-pump-services/heat-pump-repair/", "/heat-pump-services/heat-pump-diagnostics/", "/heat-pump-services/heat-pump-maintenance/", "/heat-pump-services/heat-pump-performance-service/", "/heat-pump-services/heat-pump-airflow-balancing/", "/heat-pump-services/heat-pump-reversing-valve-diagnostics/", "/heat-pump-services/heat-pump-defrost-control-board-replacement/", "/heat-pump-services/heat-pump-base-pan-heater-installation/", "/heat-pump-services/heat-pump-snow-stand-installation/", "/heat-pump-services/auxiliary-heat-control-repair/", "/heat-pump-services/heat-pump-defrost-mode-correction/", "/heat-pump-services/heat-pump-emergency-repair/"
+      ],
+      "Ductless Mini-Split Services": [
+        "/ductless-mini-split-services/mini-split-installation/", "/ductless-mini-split-services/mini-split-repair/", "/ductless-mini-split-services/mini-split-maintenance/", "/ductless-mini-split-services/mini-split-deep-cleaning/", "/ductless-mini-split-services/mini-split-airflow-balancing/", "/ductless-mini-split-services/multi-zone-mini-split-balancing/", "/ductless-mini-split-services/ceiling-cassette-mini-split-maintenance/", "/ductless-mini-split-services/floor-mounted-mini-split-service/", "/ductless-mini-split-services/mini-split-line-set-service/", "/ductless-mini-split-services/mini-split-line-set-cover-installation/", "/ductless-mini-split-services/mini-split-condensate-service/"
+      ],
+      "Ductwork, Airflow and Ventilation Services": [
+        "/ductwork-airflow-ventilation-services/ductwork-repair/", "/ductwork-airflow-ventilation-services/ductwork-sealing/", "/ductwork-airflow-ventilation-services/ductwork-installation/", "/ductwork-airflow-ventilation-services/rigid-metal-duct-fabrication/", "/ductwork-airflow-ventilation-services/flexible-duct-splicing-repair/", "/ductwork-airflow-ventilation-services/supply-plenum-fabrication-replacement/", "/ductwork-airflow-ventilation-services/return-plenum-repair/", "/ductwork-airflow-ventilation-services/manual-duct-damper-installation/", "/ductwork-airflow-ventilation-services/motorized-zone-damper-repair/", "/ductwork-airflow-ventilation-services/return-air-optimization/", "/ductwork-airflow-ventilation-services/airflow-balancing/", "/ductwork-airflow-ventilation-services/multi-room-airflow-balancing/", "/ductwork-airflow-ventilation-services/zoned-airflow-adjustment/", "/ductwork-airflow-ventilation-services/zoned-airflow-optimization/", "/ductwork-airflow-ventilation-services/whole-home-airflow-balancing/", "/ductwork-airflow-ventilation-services/air-distribution-optimization/", "/ductwork-airflow-ventilation-services/air-circulation-improvement/", "/ductwork-airflow-ventilation-services/ventilation-system-repair/", "/ductwork-airflow-ventilation-services/ventilation-improvement/", "/ductwork-airflow-ventilation-services/static-pressure-duct-testing/", "/ductwork-airflow-ventilation-services/duct-vibration-isolation/", "/ductwork-airflow-ventilation-services/acoustic-duct-lining/", "/ductwork-airflow-ventilation-services/duct-boot-sealing/", "/ductwork-airflow-ventilation-services/floor-register-replacement/", "/ductwork-airflow-ventilation-services/ceiling-grille-replacement/", "/ductwork-airflow-ventilation-services/transfer-grille-installation/", "/ductwork-airflow-ventilation-services/jump-duct-installation/", "/ductwork-airflow-ventilation-services/supply-vent-redirecting-baffling/", "/ductwork-airflow-ventilation-services/high-velocity-duct-repair/", "/ductwork-airflow-ventilation-services/mastic-duct-sealing/", "/ductwork-airflow-ventilation-services/fiberglass-duct-insulation-installation/", "/ductwork-airflow-ventilation-services/attic-duct-vapor-barrier-installation/", "/ductwork-airflow-ventilation-services/crawlspace-duct-encapsulation-support/", "/ductwork-airflow-ventilation-services/return-air-drop-expansion/", "/ductwork-airflow-ventilation-services/vent-output-calibration/"
+      ],
+      "Thermostat, Controls and Electrical HVAC Services": [
+        "/thermostat-controls-electrical-hvac-services/thermostat-installation/", "/thermostat-controls-electrical-hvac-services/thermostat-replacement/", "/thermostat-controls-electrical-hvac-services/thermostat-calibration/", "/thermostat-controls-electrical-hvac-services/thermostat-diagnostics/", "/thermostat-controls-electrical-hvac-services/thermostat-relocation-wiring/", "/thermostat-controls-electrical-hvac-services/c-wire-installation/", "/thermostat-controls-electrical-hvac-services/smart-thermostat-integration-setup/", "/thermostat-controls-electrical-hvac-services/hvac-control-system-repair/", "/thermostat-controls-electrical-hvac-services/hvac-system-calibration/", "/thermostat-controls-electrical-hvac-services/hvac-system-behavior-calibration/", "/thermostat-controls-electrical-hvac-services/thermostat-response-optimization/", "/thermostat-controls-electrical-hvac-services/control-signal-calibration/", "/thermostat-controls-electrical-hvac-services/hvac-electrical-diagnostics/", "/thermostat-controls-electrical-hvac-services/hvac-wiring-repair/", "/thermostat-controls-electrical-hvac-services/hvac-power-supply-repair/", "/thermostat-controls-electrical-hvac-services/hvac-circuit-load-correction/", "/thermostat-controls-electrical-hvac-services/hvac-system-reset-recovery/", "/thermostat-controls-electrical-hvac-services/low-voltage-wiring-troubleshooting/", "/thermostat-controls-electrical-hvac-services/high-voltage-outdoor-disconnect-repair/", "/thermostat-controls-electrical-hvac-services/hvac-transformer-replacement/", "/thermostat-controls-electrical-hvac-services/hvac-relay-board-replacement/", "/thermostat-controls-electrical-hvac-services/contractor-safety-switch-installation/", "/thermostat-controls-electrical-hvac-services/aquastat-control-replacement/", "/thermostat-controls-electrical-hvac-services/multi-zone-hvac-panel-setup/", "/thermostat-controls-electrical-hvac-services/outdoor-temperature-sensor-installation/", "/thermostat-controls-electrical-hvac-services/ac-electrical-whip-conduit-replacement/"
+      ],
+      "Refrigerant, Coil and Cooling Circuit Services": [
+        "/refrigerant-coil-cooling-circuit-services/refrigerant-leak-detection/", "/refrigerant-coil-cooling-circuit-services/electronic-refrigerant-leak-detection/", "/refrigerant-coil-cooling-circuit-services/uv-dye-refrigerant-leak-testing/", "/refrigerant-coil-cooling-circuit-services/nitrogen-pressure-testing/", "/refrigerant-coil-cooling-circuit-services/refrigerant-recharge/", "/refrigerant-coil-cooling-circuit-services/refrigerant-recovery-pumping/", "/refrigerant-coil-cooling-circuit-services/hvac-system-evacuation/", "/refrigerant-coil-cooling-circuit-services/deep-vacuum-ac-lines/", "/refrigerant-coil-cooling-circuit-services/refrigerant-retrofit-conversions/", "/refrigerant-coil-cooling-circuit-services/copper-line-set-flushing/", "/refrigerant-coil-cooling-circuit-services/copper-line-leak-brazing/", "/refrigerant-coil-cooling-circuit-services/liquid-line-pipe-repair/", "/refrigerant-coil-cooling-circuit-services/suction-line-insulation-replacement/", "/refrigerant-coil-cooling-circuit-services/line-set-wall-penetration-sealing/", "/refrigerant-coil-cooling-circuit-services/refrigerant-locking-cap-installation/", "/refrigerant-coil-cooling-circuit-services/ac-schrader-valve-leak-repair/", "/refrigerant-coil-cooling-circuit-services/liquid-line-filter-drier-installation/", "/refrigerant-coil-cooling-circuit-services/ac-service-valve-replacement/", "/refrigerant-coil-cooling-circuit-services/ac-accumulator-replacement/", "/refrigerant-coil-cooling-circuit-services/txv-replacement/", "/refrigerant-coil-cooling-circuit-services/evaporator-coil-service/", "/refrigerant-coil-cooling-circuit-services/evaporator-coil-replacement/", "/refrigerant-coil-cooling-circuit-services/evaporator-coil-fin-straightening/", "/refrigerant-coil-cooling-circuit-services/condenser-coil-service/", "/refrigerant-coil-cooling-circuit-services/condenser-coil-repair/", "/refrigerant-coil-cooling-circuit-services/condenser-coil-acid-wash/", "/refrigerant-coil-cooling-circuit-services/frozen-evaporator-coil-repair/", "/refrigerant-coil-cooling-circuit-services/ac-copper-pipe-ice-repair/"
+      ],
+      "Condensate, Drainage and Moisture Control Services": [
+        "/condensate-drainage-moisture-control-services/condensate-drain-line-cleaning/", "/condensate-drainage-moisture-control-services/condensate-drain-repair/", "/condensate-drainage-moisture-control-services/condensate-trap-clearing-flushing/", "/condensate-drainage-moisture-control-services/condensate-drain-line-chemical-blowout/", "/condensate-drainage-moisture-control-services/hvac-p-trap-installation/", "/condensate-drainage-moisture-control-services/drain-pan-float-switch-installation/", "/condensate-drainage-moisture-control-services/secondary-attic-drain-pan-installation/", "/condensate-drainage-moisture-control-services/ac-drain-pan-replacement/", "/condensate-drainage-moisture-control-services/condensate-pump-installation-repair/", "/condensate-drainage-moisture-control-services/condensate-neutralizer-kit-installation/", "/condensate-drainage-moisture-control-services/hvac-moisture-control/", "/condensate-drainage-moisture-control-services/hvac-drainage-system-repair/", "/condensate-drainage-moisture-control-services/hvac-moisture-balancing/", "/condensate-drainage-moisture-control-services/condensation-management/", "/condensate-drainage-moisture-control-services/condensation-prevention/", "/condensate-drainage-moisture-control-services/indoor-unit-water-leak-repair/", "/condensate-drainage-moisture-control-services/outdoor-unit-water-pooling-repair/", "/condensate-drainage-moisture-control-services/flooded-drain-pan-emergency-service/"
+      ],
+      "Indoor Air Quality, Humidity and Air Purification Services": [
+        "/indoor-air-quality-humidity-air-purification-services/indoor-air-quality-assessment/", "/indoor-air-quality-humidity-air-purification-services/air-purification-system-installation/", "/indoor-air-quality-humidity-air-purification-services/in-duct-uv-light-installation/", "/indoor-air-quality-humidity-air-purification-services/oxidizing-air-purifier-integration/", "/indoor-air-quality-humidity-air-purification-services/hepa-filter-cabinet-installation/", "/indoor-air-quality-humidity-air-purification-services/media-filter-rack-retrofitting/", "/indoor-air-quality-humidity-air-purification-services/electronic-air-cleaner-repair/", "/indoor-air-quality-humidity-air-purification-services/whole-house-dehumidifier-installation/", "/indoor-air-quality-humidity-air-purification-services/whole-house-humidifier-installation/", "/indoor-air-quality-humidity-air-purification-services/humidifier-pad-replacement/", "/indoor-air-quality-humidity-air-purification-services/steam-humidifier-maintenance/", "/indoor-air-quality-humidity-air-purification-services/bypass-humidifier-installation/", "/indoor-air-quality-humidity-air-purification-services/indoor-humidity-control/", "/indoor-air-quality-humidity-air-purification-services/humidity-distribution-control/", "/indoor-air-quality-humidity-air-purification-services/indoor-climate-stabilization/", "/indoor-air-quality-humidity-air-purification-services/hvac-odor-removal/", "/indoor-air-quality-humidity-air-purification-services/air-filtration-system-upgrade/", "/indoor-air-quality-humidity-air-purification-services/algae-tablet-treatment-programs/", "/indoor-air-quality-humidity-air-purification-services/dirty-sock-syndrome-treatment/", "/indoor-air-quality-humidity-air-purification-services/mold-in-vents-treatment/"
+      ],
+      "HVAC Component Repair and Replacement": [
+        "/hvac-component-repair-replacement/blower-motor-repair/", "/hvac-component-repair-replacement/ac-blower-motor-replacement/", "/hvac-component-repair-replacement/blower-motor-bearing-lubrication/", "/hvac-component-repair-replacement/furnace-blower-wheel-cleaning/", "/hvac-component-repair-replacement/fan-motor-repair/", "/hvac-component-repair-replacement/condenser-fan-motor-repair/", "/hvac-component-repair-replacement/outdoor-fan-blade-replacement/", "/hvac-component-repair-replacement/capacitor-replacement/", "/hvac-component-repair-replacement/ac-capacitor-testing-replacement/", "/hvac-component-repair-replacement/run-capacitor-replacement/", "/hvac-component-repair-replacement/start-capacitor-replacement/", "/hvac-component-repair-replacement/hard-start-kit-installation/", "/hvac-component-repair-replacement/contactor-replacement/", "/hvac-component-repair-replacement/ac-contactor-replacement/", "/hvac-component-repair-replacement/compressor-repair/", "/hvac-component-repair-replacement/ac-compressor-replacement/", "/hvac-component-repair-replacement/ac-muffler-repair/", "/hvac-component-repair-replacement/compressor-crankcase-heater-installation/", "/hvac-component-repair-replacement/high-pressure-switch-replacement/", "/hvac-component-repair-replacement/low-pressure-switch-replacement/", "/hvac-component-repair-replacement/high-limit-switch-replacement/", "/hvac-component-repair-replacement/furnace-control-board-replacement/", "/hvac-component-repair-replacement/furnace-fan-control-switch-repair/", "/hvac-component-repair-replacement/furnace-hot-surface-ignitor-replacement/", "/hvac-component-repair-replacement/furnace-flame-sensor-replacement/", "/hvac-component-repair-replacement/furnace-gas-valve-replacement/", "/hvac-component-repair-replacement/furnace-thermocouple-replacement/", "/hvac-component-repair-replacement/furnace-rollout-switch-replacement/", "/hvac-component-repair-replacement/draft-inducer-motor-replacement/", "/hvac-component-repair-replacement/electric-furnace-heating-element-replacement/", "/hvac-component-repair-replacement/electric-heating-sequencer-replacement/", "/hvac-component-repair-replacement/pilot-tubing-replacement/", "/hvac-component-repair-replacement/standing-pilot-light-repair/", "/hvac-component-repair-replacement/main-gas-shutoff-valve-replacement/", "/hvac-component-repair-replacement/outdoor-unit-sound-blanket-installation/", "/hvac-component-repair-replacement/ac-vibration-isolation-pad-replacement/"
+      ],
+      "HVAC Performance, Balancing and Efficiency Services": [
+        "/hvac-performance-balancing-efficiency-services/hvac-system-performance-evaluation/", "/hvac-performance-balancing-efficiency-services/hvac-efficiency-optimization/", "/hvac-performance-balancing-efficiency-services/hvac-system-balancing/", "/hvac-performance-balancing-efficiency-services/hvac-load-adjustment/", "/hvac-performance-balancing-efficiency-services/hvac-system-load-balancing/", "/hvac-performance-balancing-efficiency-services/hvac-temperature-control-optimization/", "/hvac-performance-balancing-efficiency-services/hvac-runtime-optimization/", "/hvac-performance-balancing-efficiency-services/hvac-runtime-stabilization/", "/hvac-performance-balancing-efficiency-services/hvac-performance-stabilization/", "/hvac-performance-balancing-efficiency-services/hvac-system-stability-correction/", "/hvac-performance-balancing-efficiency-services/hvac-system-efficiency-tuning/", "/hvac-performance-balancing-efficiency-services/hvac-energy-optimization/", "/hvac-performance-balancing-efficiency-services/hvac-environmental-calibration/", "/hvac-performance-balancing-efficiency-services/system-cycling-correction/", "/hvac-performance-balancing-efficiency-services/system-capacitance-diagnostic-testing/", "/hvac-performance-balancing-efficiency-services/system-static-performance-audit/", "/hvac-performance-balancing-efficiency-services/peak-load-performance-tuning/"
+      ],
+      "Emergency HVAC Services": [
+        "/emergency-hvac-services/emergency-hvac-repair/", "/emergency-hvac-services/24-hour-hvac-service/", "/emergency-hvac-services/same-day-hvac-repair/", "/emergency-hvac-services/after-hours-hvac-service/", "/emergency-hvac-services/urgent-hvac-system-repair/", "/emergency-hvac-services/hvac-breakdown-response/", "/emergency-hvac-services/immediate-hvac-restoration/", "/emergency-hvac-services/emergency-air-conditioning-repair/", "/emergency-hvac-services/emergency-furnace-repair/", "/emergency-hvac-services/emergency-gas-leak-hvac-shutoff-repair/", "/emergency-hvac-services/emergency-sparking-ac-repair/", "/emergency-hvac-services/extreme-heatwave-cooling-repair/", "/emergency-hvac-services/freezing-weather-heating-repair/", "/emergency-hvac-services/holiday-weekend-hvac-dispatch/", "/emergency-hvac-services/storm-damage-hvac-inspection/", "/emergency-hvac-services/ac-tripping-circuit-breaker-emergency/", "/emergency-hvac-services/flooded-ac-drain-pan-emergency/"
+      ],
+      "Light Commercial HVAC Services": [
+        "/light-commercial-hvac-services/commercial-rooftop-unit-diagnostics/", "/light-commercial-hvac-services/rtu-economizer-damper-repair/", "/light-commercial-hvac-services/rtu-roof-curb-weather-sealing/", "/light-commercial-hvac-services/packaged-hvac-unit-fan-replacement/", "/light-commercial-hvac-services/make-up-air-unit-filter-change/", "/light-commercial-hvac-services/kitchen-hood-make-up-air-integration/", "/light-commercial-hvac-services/commercial-exhaust-fan-belt-replacement/", "/light-commercial-hvac-services/retail-space-air-curtain-maintenance/", "/light-commercial-hvac-services/warehouse-unit-heater-repair/", "/light-commercial-hvac-services/chilled-water-line-insulation-service/", "/light-commercial-hvac-services/commercial-thermostat-lockbox-installation/", "/light-commercial-hvac-services/multi-family-preventive-maintenance-scheduling/", "/light-commercial-hvac-services/server-room-mini-split-installation/"
+      ],
+      "Hydronic, Boiler and Radiator Services": [
+        "/hydronic-boiler-radiator-services/boiler-blowdown-service/", "/hydronic-boiler-radiator-services/boiler-expansion-tank-charging/", "/hydronic-boiler-radiator-services/boiler-pressure-relief-valve-replacement/", "/hydronic-boiler-radiator-services/boiler-sight-glass-service/", "/hydronic-boiler-radiator-services/cast-iron-boiler-section-sealing/", "/hydronic-boiler-radiator-services/hydronic-circulator-pump-replacement/", "/hydronic-boiler-radiator-services/hydronic-zone-valve-repair/", "/hydronic-boiler-radiator-services/baseboard-radiator-bleeding/", "/hydronic-boiler-radiator-services/low-water-cutoff-switch-testing/", "/hydronic-boiler-radiator-services/flue-pipe-venting-repair/", "/hydronic-boiler-radiator-services/chimney-liner-inspection/", "/hydronic-boiler-radiator-services/flue-gas-combustion-analysis/", "/hydronic-boiler-radiator-services/combustion-draft-interference-testing/"
+      ],
+      "Evaporative and Swamp Cooler Services": [
+        "/evaporative-swamp-cooler-services/swamp-cooler-pad-replacement/", "/evaporative-swamp-cooler-services/evaporative-cooler-water-pump-repair/", "/evaporative-swamp-cooler-services/swamp-cooler-float-valve-adjustment/", "/evaporative-swamp-cooler-services/water-distributor-tube-cleaning/", "/evaporative-swamp-cooler-services/swamp-cooler-blower-belt-replacement/", "/evaporative-swamp-cooler-services/motor-sheave-pulley-adjustment/", "/evaporative-swamp-cooler-services/evaporative-cooler-winterization-shutdown/", "/evaporative-swamp-cooler-services/swamp-cooler-spring-startup-service/"
+      ],
+      "Geothermal HVAC Services": [
+        "/geothermal-hvac-services/geothermal-ground-loop-flushing/", "/geothermal-hvac-services/geothermal-desuperheater-repair/", "/geothermal-hvac-services/geothermal-hvac-diagnostics/", "/geothermal-hvac-services/geothermal-performance-service/"
+      ],
+      "Preventive Maintenance and Tune-Up Services": [
+        "/preventive-maintenance-tune-up-services/hvac-tune-up/", "/preventive-maintenance-tune-up-services/preventive-hvac-service/", "/preventive-maintenance-tune-up-services/hvac-cleaning-service/", "/preventive-maintenance-tune-up-services/hvac-system-inspection/", "/preventive-maintenance-tune-up-services/filter-replacement-service/", "/preventive-maintenance-tune-up-services/ac-seasonal-maintenance/", "/preventive-maintenance-tune-up-services/furnace-maintenance-service/", "/preventive-maintenance-tune-up-services/deep-maintenance-efficiency-tuning/"
+      ],
+      "Installation, Replacement and System Upgrade Services": [
+        "/installation-replacement-system-upgrade-services/hvac-installation/", "/installation-replacement-system-upgrade-services/hvac-replacement/", "/installation-replacement-system-upgrade-services/hvac-system-replacement/", "/installation-replacement-system-upgrade-services/hvac-system-relocation/", "/installation-replacement-system-upgrade-services/hvac-unit-sizing-service/", "/installation-replacement-system-upgrade-services/improper-installation-correction/", "/installation-replacement-system-upgrade-services/unit-upgrade-service/", "/installation-replacement-system-upgrade-services/old-hvac-system-upgrade/", "/installation-replacement-system-upgrade-services/dual-fuel-system-logic-setup/", "/installation-replacement-system-upgrade-services/solar-attic-fan-load-reduction/", "/installation-replacement-system-upgrade-services/attic-stair-cover-insulation-installation/", "/installation-replacement-system-upgrade-services/attic-ventilator-fan-hvac-integration/"
+      ]
+    };
+
+    // --- NEW DATA: HIGH-INTENT SYMPTOM & KEYWORD MAPPING ---
+    // Instead of creating thin pages for these, we weave them into existing categories to capture search intent.
+    const symptomKeywords = {
+      "Air Conditioning Services": [
+        "ac airflow strong but air not cold", "ac blowing hot air intermittently", "ac cooling uneven between floors",
+        "ac losing cooling after sunset", "ac not cooling upstairs", "ac freezing up", "ac making loud noise",
+        "ac stopped working suddenly", "cooling output reduced after seasonal change", "system runs longer cycles than expected",
+        "ac humming but not starting", "ac not working after power outage", "ac cycles frequently without cooling improvement"
+      ],
+      "Heating and Furnace Services": [
+        "furnace blowing cold air at night", "furnace clicking but not starting", "heater runs continuously but home stays cold",
+        "hot and cold spots in house", "furnace smells like rotten eggs/gas", "furnace short cycling",
+        "heating system reacts slowly to thermostat", "heater not working in winter", "heater works only on certain thermostat settings",
+        "heating stops after short operation cycle", "furnace unable to maintain temperature"
+      ],
+      "Ductwork, Airflow and Ventilation Services": [
+        "airflow blocked in newly furnished rooms", "airflow drops when multiple vents are open", "dust blowing from vents",
+        "stale air buildup in closed rooms", "poor airflow in corner rooms", "one vent blowing strong while others weak",
+        "noisy air vents", "hvac causing dust circulation issues", "airflow irregular due to fan speed variation",
+        "air pressure imbalance in home"
+      ],
+      "Thermostat, Controls and Electrical HVAC Services": [
+        "ac breaker keeps tripping", "thermostat screen blank diagnostics", "system does not respond to thermostat changes",
+        "hvac randomly shutting off", "hvac not getting power", "thermostat wrong temperature reading",
+        "hvac control irregularities after wiring changes", "system resets unexpectedly during operation"
+      ],
+      "Condensate, Drainage and Moisture Control Services": [
+        "ac leaking water inside", "condensation appearing during nighttime operation", "water dripping only during high humidity",
+        "ceiling leak from ac", "hvac dripping water", "water pooling around ac unit", "moisture damage near ceiling vents",
+        "clogged ac drain line", "hvac condensation problem", "ac drain line overflow"
+      ],
+      "Emergency HVAC Services": [
+        "complete system failure without warning", "sudden loss of airflow across entire house", "urgent hvac failure in occupied home",
+        "hvac breakdown during storm conditions", "system failure during critical temperature conditions", "24/7 Emergency AC Failure Response",
+        "hvac stopped working during extreme heat"
+      ],
+      "Indoor Air Quality, Humidity and Air Purification Services": [
+        "hvac smells musty (dirty sock syndrome)", "hvac affecting breathing comfort indoors", "bad odor from vents",
+        "hvac contributing to allergy symptoms", "humidity spikes when system cycles", "hvac spreading odors across rooms"
+      ],
+      "HVAC Component Repair and Replacement": [
+        "ac compressor not working", "condenser fan not working", "blower motor not working", "hvac making noise when starting",
+        "ac clicking noise fix", "furnace whistling sound diagnostics", "ac rattling noise repair"
+      ],
+      "General": [
+        "hvac system running constantly", "hvac underperforms during heatwaves", "poor indoor air quality",
+        "system slow to respond to environment changes", "hvac consumes more energy without better cooling"
+      ]
+    };
+
+
+    // --- UTILITY FUNCTIONS ---
+    const formatTitleFromSlug = (slug) => {
+      if (!slug || slug === '/') return 'Home';
+      const parts = slug.split('/').filter(Boolean);
+      const lastPart = parts[parts.length - 1];
+      return lastPart
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    const getCategorySlug = (categoryTitle) => {
+      return `/${categoryTitle.toLowerCase().replace(/,/g, '').replace(/ & /g, '-').replace(/\s+/g, '-')}/`;
+    };
+
+    // Helper to get a random subset of symptoms for varied content
+    const getRandomSymptoms = (categoryName, count = 3) => {
+      const pool = symptomKeywords[categoryName] || symptomKeywords["General"];
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    };
+
+    // Global Config
+    const CITY = "Atlanta";
+    const STATE = "GA";
+    const PHONE = "(404) 555-0198"; 
+
+    // --- COMPONENTS ---
+
+    // 1. Layout & Navigation
+    const Layout = ({ children, currentPath, navigate }) => {
+      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
+          <div className="bg-blue-900 text-white py-2 px-4 text-sm hidden md:block">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <div className="flex space-x-6">
+                <span className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-blue-300" /> Serving {CITY}, {STATE} & Surrounding Areas</span>
+                <span className="flex items-center"><Clock className="w-4 h-4 mr-2 text-blue-300" /> 24/7 Emergency Service Available</span>
+              </div>
+              <div className="flex space-x-4">
+                <span className="font-semibold text-orange-400">Licensed & Insured HVAC Experts</span>
+              </div>
+            </div>
+          </div>
+
+          <header className="bg-white shadow-md sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+              <div className="flex items-center cursor-pointer group" onClick={() => navigate('/')}>
+                <div className="bg-blue-600 p-2 rounded-lg mr-3 group-hover:bg-blue-700 transition-colors">
+                  <Thermometer className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-slate-900 leading-tight tracking-tight">
+                    {CITY} Climate <span className="text-blue-600">Pros</span>
+                  </h1>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Ranked #1 HVAC Service</p>
+                </div>
+              </div>
+
+              <div className="hidden md:flex items-center space-x-8">
+                <nav className="flex space-x-6 font-medium text-slate-600">
+                  <button onClick={() => navigate('/')} className="hover:text-blue-600 transition">Home</button>
+                  <button onClick={() => navigate('/hvac-services/')} className="hover:text-blue-600 transition">All Services</button>
+                  <button onClick={() => navigate('/emergency-hvac-services/')} className="text-red-600 hover:text-red-700 font-bold transition">Emergency Repairs</button>
+                </nav>
+                <div className="flex items-center space-x-4">
+                  <a href={`tel:${PHONE}`} className="flex items-center text-xl font-bold text-slate-900 hover:text-blue-600 transition">
+                    <Phone className="w-5 h-5 mr-2 text-blue-600" />
+                    {PHONE}
+                  </a>
+                  <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-md font-bold shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
+                    Get a Quote
+                  </button>
+                </div>
+              </div>
+
+              <button className="md:hidden p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="w-8 h-8 text-slate-800" /> : <Menu className="w-8 h-8 text-slate-800" />}
+              </button>
+            </div>
+
+            {isMobileMenuOpen && (
+              <div className="md:hidden bg-white border-t border-slate-100 absolute w-full shadow-xl">
+                <div className="flex flex-col px-4 py-6 space-y-4">
+                  <button onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }} className="text-left font-medium text-lg text-slate-800 py-2 border-b border-slate-100">Home</button>
+                  <button onClick={() => { navigate('/hvac-services/'); setIsMobileMenuOpen(false); }} className="text-left font-medium text-lg text-slate-800 py-2 border-b border-slate-100">All Services</button>
+                  <button onClick={() => { navigate('/emergency-hvac-services/'); setIsMobileMenuOpen(false); }} className="text-left font-bold text-lg text-red-600 py-2 border-b border-slate-100">Emergency Repair</button>
+                  <div className="pt-4 flex flex-col space-y-3">
+                    <a href={`tel:${PHONE}`} className="flex items-center justify-center bg-blue-50 text-blue-700 py-3 rounded-md font-bold text-lg border border-blue-100">
+                      <Phone className="w-5 h-5 mr-2" /> {PHONE}
+                    </a>
+                    <button className="bg-orange-500 text-white py-3 rounded-md font-bold text-lg shadow-md">
+                      Request Service Online
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </header>
+
+          <main className="flex-grow flex flex-col">
+            {children}
+          </main>
+
+          <footer className="bg-slate-900 text-slate-300 py-16">
+            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
+              <div>
+                <div className="flex items-center mb-6">
+                  <Thermometer className="w-6 h-6 text-blue-500 mr-2" />
+                  <span className="text-xl font-bold text-white">{CITY} Climate Pros</span>
+                </div>
+                <p className="text-sm leading-relaxed mb-6">
+                  Your premier choice for residential and commercial HVAC services across {CITY}, {STATE}. We specialize in resolving overlapping symptoms, structural airflow problems, and emergency breakdowns.
+                </p>
+                <div className="flex items-center space-x-3 text-white font-bold text-lg">
+                  <Phone className="text-orange-500 w-5 h-5" />
+                  <span>{PHONE}</span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">Core Services</h3>
+                <ul className="space-y-3 text-sm">
+                  <li><button onClick={() => navigate('/air-conditioning-services/')} className="hover:text-blue-400 transition">Air Conditioning</button></li>
+                  <li><button onClick={() => navigate('/heating-furnace-services/')} className="hover:text-blue-400 transition">Heating & Furnace</button></li>
+                  <li><button onClick={() => navigate('/ductwork-airflow-ventilation-services/')} className="hover:text-blue-400 transition">Ductwork & Airflow</button></li>
+                  <li><button onClick={() => navigate('/indoor-air-quality-humidity-air-purification-services/')} className="hover:text-blue-400 transition">Indoor Air Quality</button></li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">Specialty HVAC</h3>
+                <ul className="space-y-3 text-sm">
+                  <li><button onClick={() => navigate('/heat-pump-services/')} className="hover:text-blue-400 transition">Heat Pumps</button></li>
+                  <li><button onClick={() => navigate('/ductless-mini-split-services/')} className="hover:text-blue-400 transition">Mini-Splits</button></li>
+                  <li><button onClick={() => navigate('/light-commercial-hvac-services/')} className="hover:text-blue-400 transition">Commercial HVAC</button></li>
+                  <li><button onClick={() => navigate('/emergency-hvac-services/')} className="hover:text-red-400 transition">24/7 Emergency</button></li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">Service Area</h3>
+                <p className="text-sm mb-4">
+                  Proudly serving {CITY}, {STATE} and the surrounding metropolitan region. Fast dispatch times and local technicians.
+                </p>
+                <div className="bg-slate-800 p-4 rounded-lg flex items-start space-x-3 border border-slate-700">
+                  <ShieldCheck className="text-green-400 w-6 h-6 flex-shrink-0" />
+                  <p className="text-xs">
+                    <strong>Satisfaction Guaranteed.</strong> Fully licensed, bonded, and insured for your peace of mind.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center">
+              <p>&copy; {new Date().getFullYear()} {CITY} Climate Pros. All Rights Reserved.</p>
+              <div className="flex space-x-4 mt-4 md:mt-0">
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span>Sitemap</span>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    };
+
+    const HeroSection = ({ title, subtitle, bgClass = "bg-blue-900" }) => (
+      <div className={`relative ${bgClass} text-white py-20 md:py-32 overflow-hidden`}>
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent"></div>
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 opacity-10">
+          <Wind className="w-96 h-96" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center">
+          <div className="w-full md:w-3/5 pr-0 md:pr-12 mb-10 md:mb-0">
+            <div className="inline-block bg-blue-800/50 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide border border-blue-700/50 mb-6">
+              <span className="flex items-center"><MapPin className="w-4 h-4 mr-2" /> Top-Rated in {CITY}, {STATE}</span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">{title}</h1>
+            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl leading-relaxed">{subtitle}</p>
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg shadow-orange-500/30 flex justify-center items-center transition-transform transform hover:scale-105">
+                Book Service Now <ChevronRight className="w-5 h-5 ml-2" />
+              </button>
+              <a href={`tel:${PHONE}`} className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-8 py-4 rounded-lg font-bold text-lg flex justify-center items-center backdrop-blur-sm transition-colors">
+                <Phone className="w-5 h-5 mr-2" /> Call {PHONE}
+              </a>
+            </div>
+          </div>
+          
+          <div className="w-full md:w-2/5">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 text-slate-800 border-t-4 border-orange-500 relative">
+              <div className="absolute -top-4 right-8 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Fast Response</div>
+              <h3 className="text-2xl font-bold mb-2">Request an Estimate</h3>
+              <p className="text-slate-500 text-sm mb-6">Fill out the form below and our {CITY} team will contact you shortly.</p>
+              
+              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                <input type="text" placeholder="First & Last Name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                <input type="tel" placeholder="Phone Number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all">
+                  <option value="">What type of service do you need?</option>
+                  {Object.keys(rawSitemap).slice(0, 5).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  <option value="other">Other / Not Sure</option>
+                </select>
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg shadow-md transition-colors mt-2 text-lg">Get My Free Quote</button>
+                <p className="text-xs text-center text-slate-400 mt-4 flex items-center justify-center"><ShieldCheck className="w-3 h-3 mr-1" /> Your information is 100% secure.</p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    const Breadcrumbs = ({ path, navigate }) => {
+      if (path === '/') return null;
+      const segments = path.split('/').filter(Boolean);
+      return (
+        <div className="bg-slate-100 border-b border-slate-200 py-3">
+          <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center text-sm text-slate-500">
+            <button onClick={() => navigate('/')} className="hover:text-blue-600 flex items-center"><HomeIcon className="w-4 h-4 mr-1" /> Home</button>
+            {segments.map((segment, index) => {
+              const isLast = index === segments.length - 1;
+              const routeTo = `/${segments.slice(0, index + 1).join('/')}/`;
+              const title = formatTitleFromSlug(segment);
+              return (
+                <React.Fragment key={segment}>
+                  <ChevronRight className="w-4 h-4 mx-2 text-slate-400 flex-shrink-0" />
+                  {isLast ? <span className="font-semibold text-slate-800 truncate">{title}</span> : <button onClick={() => navigate(routeTo)} className="hover:text-blue-600 truncate">{title}</button>}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
+    const HomePage = ({ navigate }) => (
+      <div className="flex flex-col">
+        <HeroSection 
+          title={`Atlanta's Most Trusted HVAC Specialists`} 
+          subtitle={`From precision AC repairs to comprehensive ductwork balancing and emergency furnace fixes, we restore comfort to ${CITY} homes perfectly, the first time.`}
+        />
+        
+        {/* Trust Signals */}
+        <div className="bg-white py-8 border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
+            <div className="flex flex-col items-center"><Clock className="w-8 h-8 text-blue-600 mb-2" /><h4 className="font-bold text-slate-800">24/7 Availability</h4><p className="text-sm text-slate-500">Emergency dispatch</p></div>
+            <div className="flex flex-col items-center"><ShieldCheck className="w-8 h-8 text-blue-600 mb-2" /><h4 className="font-bold text-slate-800">Fully Licensed</h4><p className="text-sm text-slate-500">Insured {CITY} Techs</p></div>
+            <div className="flex flex-col items-center"><Wrench className="w-8 h-8 text-blue-600 mb-2" /><h4 className="font-bold text-slate-800">All Brands</h4><p className="text-sm text-slate-500">Repair & Installation</p></div>
+            <div className="flex flex-col items-center"><CheckCircle2 className="w-8 h-8 text-blue-600 mb-2" /><h4 className="font-bold text-slate-800">100% Guarantee</h4><p className="text-sm text-slate-500">Satisfaction promised</p></div>
+          </div>
+        </div>
+
+        {/* Dynamic Warning Signs / Intent Matching (SEO focus) */}
+        <section className="bg-amber-50 py-12 border-b border-amber-100">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-4 flex items-center justify-center">
+                <Search className="w-6 h-6 mr-3 text-amber-600" /> Are You Experiencing Any of These Symptoms?
+             </h2>
+             <p className="text-slate-700 mb-8 max-w-2xl mx-auto">Don't wait for a complete system breakdown. If your home in {CITY} is showing these warning signs, our diagnostic teams can resolve them today.</p>
+             <div className="flex flex-wrap justify-center gap-3">
+               {[
+                 "ac blowing hot air intermittently", "furnace short cycling", "water pooling around ac unit", 
+                 "thermostat screen blank", "ac breaker keeps tripping", "hot and cold spots in house",
+                 "hvac smells musty (dirty sock syndrome)", "sudden loss of airflow across entire house"
+               ].map(symptom => (
+                 <span key={symptom} className="bg-white border border-amber-200 text-amber-800 text-sm font-semibold px-4 py-2 rounded-full shadow-sm capitalize">
+                    {symptom}
+                 </span>
+               ))}
+             </div>
+          </div>
+        </section>
+
+        {/* Category Grid */}
+        <section className="py-20 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">Comprehensive HVAC Services in {CITY}</h2>
+              <p className="text-lg text-slate-600 max-w-3xl mx-auto">We don't just treat symptoms; we diagnose the root cause. Select a category below to explore our specialized performance, repair, and installation services.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Object.keys(rawSitemap).map((categoryName, idx) => {
+                const slug = getCategorySlug(categoryName);
+                let Icon = Settings;
+                if (categoryName.includes('Conditioning') || categoryName.includes('Cooling')) Icon = Thermometer;
+                if (categoryName.includes('Heating') || categoryName.includes('Furnace') || categoryName.includes('Boiler')) Icon = Zap;
+                if (categoryName.includes('Airflow') || categoryName.includes('Duct') || categoryName.includes('Quality')) Icon = Wind;
+                if (categoryName.includes('Condensate') || categoryName.includes('Moisture')) Icon = Droplets;
+                if (categoryName.includes('Emergency')) Icon = AlertTriangle;
+
+                return (
+                  <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer flex flex-col h-full group" onClick={() => navigate(slug)}>
+                    <div className="p-8 flex-grow">
+                      <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
+                        <Icon className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-3">{categoryName}</h3>
+                      <p className="text-slate-500 mb-6 line-clamp-3">Expert {categoryName.toLowerCase()} tailored for {CITY} residential and commercial properties.</p>
+                    </div>
+                    <div className="px-8 py-4 border-t border-slate-100 text-blue-600 font-semibold flex items-center justify-between group-hover:bg-blue-50 transition-colors rounded-b-xl">
+                      View Services <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Content Section */}
+        <section className="py-20 bg-white border-t border-slate-200">
+          <div className="max-w-4xl mx-auto px-4 prose prose-lg text-slate-600">
+            <h2 className="text-3xl font-bold text-slate-900 mb-6 text-center">Why Rely on {CITY} Climate Pros?</h2>
+            <p>When your environment is uncomfortable, you need more than just a quick fix. You need a comprehensive diagnostic approach. Our structured service methodology ensures that whether you are dealing with uneven heating, weak AC airflow, or a complete system breakdown without warning, we address the underlying performance issues—not just the surface symptoms.</p>
+            <p>Operating locally in <strong>{CITY}, {STATE}</strong>, our technicians are trained across all major brands and system types. From specialized micro-services like <em>Mastic Duct Sealing</em> and <em>Secondary Attic Drain Pan Installations</em> to complete <em>Geothermal Ground Loop Flushing</em>, we pride ourselves on transparent pricing, precise calibration, and restoring your indoor climate rapidly.</p>
+          </div>
+        </section>
+      </div>
+    );
+
+    const CategoryPage = ({ categoryName, childrenSlugs, navigate }) => {
+      // Pull symptoms dynamically to avoid thin content
+      const symptomsList = symptomKeywords[categoryName] || symptomKeywords["General"];
+
+      return (
+        <div className="pb-20">
+          <div className="bg-slate-900 text-white py-16">
+            <div className="max-w-7xl mx-auto px-4">
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-4">{categoryName} in {CITY}, {STATE}</h1>
+              <p className="text-xl text-slate-300 max-w-3xl">Comprehensive diagnostic, repair, maintenance, and optimization services. Select from our specialized sub-services below.</p>
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2">
+              
+              {/* Added Symptom Block for SEO Richness */}
+              {symptomsList && symptomsList.length > 0 && (
+                <div className="bg-red-50 border border-red-100 p-6 rounded-lg mb-10">
+                  <h3 className="text-lg font-bold text-red-900 mb-3 flex items-center">
+                    <AlertTriangle className="w-5 h-5 mr-2 text-red-600"/> Common Warning Signs We Resolve
+                  </h3>
+                  <p className="text-sm text-red-800 mb-4">If you are currently experiencing any of the following issues, please contact us immediately to prevent further system damage:</p>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {symptomsList.map((sym, i) => (
+                      <li key={i} className="flex items-start text-sm text-red-800">
+                        <span className="text-red-500 mr-2">•</span> <span className="capitalize">{sym}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-2">Available Sub-Services</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {childrenSlugs.map(slug => (
+                  <button key={slug} onClick={() => navigate(slug)} className="text-left bg-white border border-slate-200 p-4 rounded-lg shadow-sm hover:shadow-md hover:border-blue-400 transition flex items-center group">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 group-hover:scale-150 transition-transform"></div>
+                    <span className="font-medium text-slate-700 group-hover:text-blue-700 transition-colors">{formatTitleFromSlug(slug)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <div className="sticky top-28 bg-blue-50 rounded-xl p-8 border border-blue-100 shadow-sm">
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Need {categoryName} Now?</h3>
+                <p className="text-slate-600 mb-6 text-sm">Our dispatch team is standing by in {CITY}. We can diagnose and fix your issue today.</p>
+                <a href={`tel:${PHONE}`} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg shadow flex items-center justify-center transition-colors mb-4 text-lg"><Phone className="w-5 h-5 mr-2" /> Call {PHONE}</a>
+                <div className="flex items-center justify-center my-4"><div className="h-px bg-blue-200 w-full"></div><span className="px-3 text-blue-400 text-sm font-medium uppercase">OR</span><div className="h-px bg-blue-200 w-full"></div></div>
+                <button className="w-full bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold py-3 rounded-lg transition-colors">Request Online Quote</button>
+                <ul className="mt-6 space-y-2 text-sm text-slate-600">
+                  <li className="flex items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mr-2" /> Local {CITY} Technicians</li>
+                  <li className="flex items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mr-2" /> Upfront, Honest Pricing</li>
+                  <li className="flex items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mr-2" /> Parts & Labor Warranties</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ServicePage = ({ serviceSlug, categoryName }) => {
+      const serviceTitle = formatTitleFromSlug(serviceSlug);
+      
+      // Pull random symptoms related to the parent category to enrich the leaf page content dynamically
+      const pageSymptoms = useMemo(() => getRandomSymptoms(categoryName, 3), [categoryName]);
+
+      return (
+        <div className="pb-20">
+          <div className="bg-slate-800 text-white py-12 md:py-20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+              <div className="w-full h-full" style={{backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px'}}></div>
+            </div>
+            <div className="max-w-7xl mx-auto px-4 relative z-10">
+              <div className="inline-block bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">{categoryName}</div>
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">{serviceTitle} in {CITY}, {STATE}</h1>
+              <p className="text-lg text-slate-300 max-w-2xl">Professional, fast, and guaranteed <strong>{serviceTitle.toLowerCase()}</strong>. Stop struggling with poor performance—let our certified {CITY} technicians diagnose and resolve the issue permanently.</p>
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2 space-y-10 text-slate-700">
+              
+              <section className="prose prose-blue max-w-none">
+                <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">Overview of {serviceTitle}</h2>
+                <p>When you require <strong>{serviceTitle.toLowerCase()}</strong>, waiting can often lead to more severe system damage. In {CITY}, the climate demands that your HVAC system operates at peak efficiency year-round. Our specialized process isolates the exact component failure or structural imbalance.</p>
+                <p>If you have recently noticed that your <strong>{pageSymptoms[0]}</strong> or perhaps <strong>{pageSymptoms[1]}</strong>, these are strong indicators that intervention is needed. Rather than applying a temporary patch, our diagnostic team utilizes advanced measurement tools to evaluate electrical loads, refrigerant pressures, and static airflow. This ensures that our <em>{serviceTitle.toLowerCase()}</em> restores the entire unit to manufacturer specifications.</p>
+              </section>
+
+              <section className="bg-slate-50 p-6 md:p-8 rounded-xl border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Our {CITY} Service Process</h3>
+                <ul className="space-y-4">
+                  <li className="flex"><div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">1</div><div><h4 className="font-bold text-slate-900">Comprehensive Assessment</h4><p className="text-sm text-slate-600 mt-1">We thoroughly test all related sub-systems (including checking if <em>{pageSymptoms[2]}</em>) before recommending a fix.</p></div></li>
+                  <li className="flex"><div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">2</div><div><h4 className="font-bold text-slate-900">Transparent Quote</h4><p className="text-sm text-slate-600 mt-1">You receive a flat-rate estimate with no hidden fees.</p></div></li>
+                  <li className="flex"><div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-4">3</div><div><h4 className="font-bold text-slate-900">Precision Execution & Testing</h4><p className="text-sm text-slate-600 mt-1">We recalibrate the system and run a full cycle test to verify optimal performance.</p></div></li>
+                </ul>
+              </section>
+
+              {/* Dynamic FAQ section to absorb long-tail keywords */}
+              <section className="prose prose-blue max-w-none">
+                <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">Frequently Asked Questions</h2>
+                <div className="space-y-6 mt-6">
+                  <div>
+                    <h4 className="font-bold text-lg text-slate-800 m-0">Does {serviceTitle.toLowerCase()} fix issues like {pageSymptoms[0]}?</h4>
+                    <p className="mt-1 text-slate-600">Yes, in many cases, this specific service directly targets the underlying mechanical or airflow faults that cause those exact symptoms in your home.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-slate-800 m-0">Do you offer emergency dispatch in {CITY}?</h4>
+                    <p className="mt-1 text-slate-600">Yes, we understand that HVAC failures don't happen on a schedule. We offer rapid dispatch throughout the {CITY} metro area for urgent situations, particularly during extreme heatwaves or freezing weather.</p>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+            
+            <div className="lg:col-span-1">
+              <div className="sticky top-28 bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-slate-900">Schedule This Service</h3>
+                  <p className="text-sm text-slate-500 mt-1">Get an estimate for {serviceTitle}</p>
+                </div>
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                  <div><label className="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label><input type="text" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" /></div>
+                  <div><label className="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label><input type="tel" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" /></div>
+                  <div><label className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Needed</label><input type="text" readOnly value={serviceTitle} className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 font-medium cursor-not-allowed" /></div>
+                  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-lg shadow transition-transform transform hover:-translate-y-0.5 mt-4">Request Service</button>
+                </form>
+                <div className="mt-6 pt-6 border-t border-slate-100 text-center">
+                  <p className="text-sm text-slate-500 mb-2">Prefer to talk?</p>
+                  <a href={`tel:${PHONE}`} className="inline-flex items-center text-xl font-extrabold text-blue-600 hover:text-blue-800 transition"><Phone className="w-5 h-5 mr-2" /> {PHONE}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    function App() {
+      // Safe path initialization for iframe/blob environments
+      const getInitialPath = () => {
+        const path = window.location.pathname;
+        if (path === '/' || path === '/hvac-services/') return path;
+        
+        let isValid = false;
+        for (const [catName, slugs] of Object.entries(rawSitemap)) {
+          if (getCategorySlug(catName) === path || slugs.includes(path)) {
+            isValid = true;
+            break;
+          }
+        }
+        return isValid ? path : '/';
+      };
+
+      // Initialize state using the actual browser path to handle direct linking
+      const [currentPath, setCurrentPath] = useState(getInitialPath());
+
+      // Listen for browser back/forward buttons and sync state
+      useEffect(() => {
+        const handlePopState = () => {
+          setCurrentPath(getInitialPath());
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+      }, []);
+
+      // Custom navigate function that updates internal state AND the browser URL bar
+      const navigatePath = (path) => {
+        try {
+          window.history.pushState({}, '', path);
+        } catch (err) {
+          // Gracefully handle iframe/blob security restrictions
+          console.warn("History API blocked in this environment. State updated internally.");
+        }
+        setCurrentPath(path);
+      };
+
+      // Always scroll to the top of the page after a route change
+      useEffect(() => {
+        window.scrollTo(0, 0);
+      }, [currentPath]);
+
+      const routeEngine = useMemo(() => {
+        if (currentPath === '/' || currentPath === '/hvac-services/') {
+          return <HomePage navigate={navigatePath} />;
+        }
+
+        let matchedCategoryName = null;
+        let matchedCategoryChildren = null;
+        for (const [catName, slugs] of Object.entries(rawSitemap)) {
+          const catPath = getCategorySlug(catName);
+          if (currentPath === catPath) {
+            matchedCategoryName = catName;
+            matchedCategoryChildren = slugs;
+            break;
+          }
+        }
+        if (matchedCategoryName) return <CategoryPage categoryName={matchedCategoryName} childrenSlugs={matchedCategoryChildren} navigate={navigatePath} />;
+
+        let matchedServiceSlug = null;
+        let parentCategoryName = null;
+        for (const [catName, slugs] of Object.entries(rawSitemap)) {
+          if (slugs.includes(currentPath)) {
+            matchedServiceSlug = currentPath;
+            parentCategoryName = catName;
+            break;
+          }
+        }
+        if (matchedServiceSlug) return <ServicePage serviceSlug={matchedServiceSlug} categoryName={parentCategoryName} />;
+
+        return (
+          <div className="py-32 text-center">
+            <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Page Not Found</h2>
+            <button onClick={() => navigatePath('/')} className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold">Return Home</button>
+          </div>
+        );
+      }, [currentPath]);
+
+      return (
+        <Layout currentPath={currentPath} navigate={navigatePath}>
+          <Breadcrumbs path={currentPath} navigate={navigatePath} />
+          {routeEngine}
+        </Layout>
+      );
+    }
+
+    // Render the app directly to the DOM
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
